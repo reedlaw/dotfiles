@@ -43,3 +43,12 @@
 	
 [core]
 	excludesfile = /home/reed/.gitignore_global
+
+[color]
+  diff = auto
+
+[color "diff"]
+  meta = yellow bold
+  frag = magenta bold
+  old = red
+  new = green

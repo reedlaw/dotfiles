@@ -3,7 +3,10 @@
 # for examples
 
 # If not running interactively, don't do anything
-[ -z "$PS1" ] && return
+case $- in
+    *i*) ;;
+      *) return;;
+esac
 
 # don't put duplicate lines or lines starting with space in the history.
 # See bash(1) for more options
@@ -20,11 +23,15 @@ HISTFILESIZE=2000
 # update the values of LINES and COLUMNS.
 shopt -s checkwinsize
 
+# If set, the pattern "**" used in a pathname expansion context will
+# match all files and zero or more directories and subdirectories.
+#shopt -s globstar
+
 # make less more friendly for non-text input files, see lesspipe(1)
 [ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
 
 # set variable identifying the chroot you work in (used in the prompt below)
-if [ -z "$debian_chroot" ] && [ -r /etc/debian_chroot ]; then
+if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
     debian_chroot=$(cat /etc/debian_chroot)
 fi
 
@@ -78,31 +85,9 @@ if [ -x /usr/bin/dircolors ]; then
 fi
 
 # some more ls aliases
-alias ll='ls -lah'
+alias ll='ls -alF'
 alias la='ls -A'
 alias l='ls -CF'
-
-# compile from stdin
-go_libs="-lm"
-go_flags="-g -Wall"
-alias go_c="c99 -xc '-' $go_libs $go_flags"
-
-# git alias
-alias gp='git push origin master'
-alias gph='git push heroku master'
-alias ga='git add .'
-alias gai='git add --interactive'
-alias gd='git diff'
-alias gsa='git status'
-alias gl='git log'
-alias glg='git lg'
-gitCommit()
-{
-    git commit -m "$1"
-}
-alias gcm=gitCommit
-alias grv='git remote -v'
-alias gba='git branch -a'
 
 # Add an "alert" alias for long running commands.  Use like so:
 #   sleep 10; alert
@@ -120,28 +105,35 @@ fi
 # enable programmable completion features (you don't need to enable
 # this, if it's already enabled in /etc/bash.bashrc and /etc/profile
 # sources /etc/bash.bashrc).
-if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
+if ! shopt -oq posix; then
+  if [ -f /usr/share/bash-completion/bash_completion ]; then
+    . /usr/share/bash-completion/bash_completion
+  elif [ -f /etc/bash_completion ]; then
     . /etc/bash_completion
+  fi
 fi
 
-
 function parse_git_dirty {
-  [[ $(git status 2> /dev/null | tail -n1) != "nothing to commit (working directory clean)" ]] && echo "*"
+  [[ $(git status 2> /dev/null | tail -n1) != "nothing to commit, working directory clean" ]] && echo "*"
 }
 function parse_git_branch {
     git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e "s/* \(.*\)/ (\1$(parse_git_dirty))/"
 }
 export PS1='\u@\h \[\033[1;32m\]\w\[\033[33m\]$(parse_git_branch)\[\033[0m\]$ '
 
-if [ -f ~/.bash_profile ]; then
-
-. ~/.bash_profile
-
-fi
-
-# s3cmd aliases for different s3 accounts
-alias s3sb='s3cmd -c ~/.s3cfg'
-alias s3amp='s3cmd -c ~/.s3cfg-amp'
-
-export ANDROID_NDK_ROOT=~/source/sdk/android-ndk
-export COCOS2DX_ROOT=~/source/sdk/cocos2d
+# git alias
+alias gp='git push origin master'
+alias gph='git push heroku master'
+alias ga='git add .'
+alias gai='git add --interactive'
+alias gd='git diff'
+alias gsa='git status'
+alias gl='git log'
+alias glg='git lg'
+gitCommit()
+{
+    git commit -m "$1"
+}
+alias gcm=gitCommit
+alias grv='git remote -v'
+alias gba='git branch -a'
